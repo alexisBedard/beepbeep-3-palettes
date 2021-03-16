@@ -17,6 +17,10 @@
  */
 package ca.uqac.lif.cep.ltl;
 
+import java.io.IOException;
+import java.io.PrintStream;
+
+import ca.uqac.lif.cep.SMVInterface;
 import ca.uqac.lif.cep.tmf.Trim;
 
 /**

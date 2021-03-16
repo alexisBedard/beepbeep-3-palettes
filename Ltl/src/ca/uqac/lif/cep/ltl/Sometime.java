@@ -17,8 +17,12 @@
  */
 package ca.uqac.lif.cep.ltl;
 
+import java.io.IOException;
+import java.io.PrintStream;
+
 import ca.uqac.lif.cep.Processor;
 import ca.uqac.lif.cep.Pushable;
+import ca.uqac.lif.cep.SMVInterface;
 import ca.uqac.lif.cep.ltl.Troolean.Value;
 import ca.uqac.lif.cep.tmf.SinkLast;
 
@@ -26,7 +30,7 @@ import ca.uqac.lif.cep.tmf.SinkLast;
  * Troolean implementation of the LTL <b>F</b> processor
  * @author Sylvain Hallé
  */
-public class Sometime extends UnaryOperator 
+public class Sometime extends UnaryOperator implements SMVInterface
 {
 	public Sometime(Processor p)
 	{
@@ -80,5 +84,46 @@ public class Sometime extends UnaryOperator
 		Sometime st = new Sometime(m_processor.duplicate());
 		super.cloneInto(st, with_state);
 		return st;
+	}
+
+	@Override
+	public void writingSMV(PrintStream printStream, int Id, int list, int[][] array, int arrayWidth, int maxInputArity,
+			String pipeType) throws IOException {
+		printStream.printf("MODULE Sometime(lastReceived, inc_1, inb_1,ouc_1, oub_1, lastPassed)\n");
+		printStream.printf("	ASSIGN \n");
+		printStream.printf("		init(ouc_1) := case \n");
+		printStream.printf("		inc_1 = 1 : 1; \n");
+		printStream.printf("		TRUE : 2; \n");
+		printStream.printf("	esac; \n");
+			
+		printStream.printf("	init(oub_1) := case \n");
+		printStream.printf("		inb_1 = TRUE : TRUE; \n");
+		printStream.printf("		TRUE : FALSE; \n");
+		printStream.printf("	esac; \n");
+		
+		printStream.printf("	next(ouc_1):= case \n");
+		printStream.printf("		next(inc_1) = 1  : 1;\n");
+		printStream.printf("		oub_1 : 1; \n");
+		printStream.printf("		TRUE : 2; \n");
+		printStream.printf("	esac; \n");
+
+		printStream.printf("	next(oub_1) := case \n");
+		printStream.printf("		next(inb_1) = TRUE  : TRUE; \n");
+		printStream.printf("		(ouc_1 = 1) & next(inb_1) : TRUE; \n");
+		printStream.printf("		(ouc_1 = 1) & next(!inb_1) : FALSE; \n");
+		printStream.printf("		TRUE : FALSE; \n");
+		printStream.printf("	esac; \n");
+		
+		printStream.printf("		init(lastPassed) := lastReceived; \n");
+		printStream.printf("		next(lastPassed) := next(lastReceived); \n");
+	}
+
+	@Override
+	public void writePipes(PrintStream printStream, int ProcId, int[][] connectionArray) throws IOException {
+		printStream.printf("		--Sometime \n");
+		printStream.printf("		pipe_"+ProcId+" : boolean;\n");
+		printStream.printf("		b_pipe_"+ProcId+ " : boolean; \n");
+		printStream.printf("		lastPassed_"+ProcId+": boolean; \n");
+		
 	}
 }

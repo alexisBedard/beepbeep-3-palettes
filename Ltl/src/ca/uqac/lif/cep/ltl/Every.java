@@ -18,14 +18,18 @@
 package ca.uqac.lif.cep.ltl;
 
 import ca.uqac.lif.cep.Processor;
+import ca.uqac.lif.cep.SMVInterface;
 import ca.uqac.lif.cep.functions.Function;
+
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
 
 /**
  * Troolean implementation of the universal first-order quantifier.
  * @author Sylvain Hallé
  */
-public class Every extends FirstOrderQuantifier 
+public class Every extends FirstOrderQuantifier implements SMVInterface
 {
   public Every(String var_name, Function dom_function, Processor expression)
   {
@@ -52,4 +56,20 @@ public class Every extends FirstOrderQuantifier
     List<Troolean.Value> values2 = (List<Troolean.Value>) values;
     return Troolean.and(values2);
   }
+
+@Override
+public void writingSMV(PrintStream printStream, int Id, int list, int[][] array, int arrayWidth, int maxInputArity,
+		String pipeType) throws IOException {
+	// TODO Auto-generated method stub
+	
+}
+
+@Override
+public void writePipes(PrintStream printStream, int ProcId, int[][] connectionArray) throws IOException {
+	printStream.printf("		--Every \n");
+	printStream.printf("		pipe_"+ProcId+" : boolean;\n");
+	printStream.printf("		b_pipe_"+ProcId+ " : boolean; \n");
+	printStream.printf("		lastPassed_"+ProcId+": boolean; \n");
+	
+}
 }
